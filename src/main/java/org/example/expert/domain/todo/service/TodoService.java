@@ -5,6 +5,7 @@ import org.example.expert.client.WeatherClient;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
+import org.example.expert.domain.todo.dto.request.TodoSearchRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
 import org.example.expert.domain.todo.entity.Todo;
@@ -48,11 +49,53 @@ public class TodoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TodoResponse> getTodos(int page, int size) {
+    public Page<TodoResponse> getTodos(int page, int size, TodoSearchRequest todoSearchRequest) {
+
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        // 요청에 날씨가 없으면 이거
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+        // 가능한 검색 조건들
+        // 날씨 유무 * 시작일 유무 * 끝일 유무 = 2^3 = 8
+        // 아니 8개나 적어야함???
+
+        // 요청에 날씨가 있고
+        if(!todoSearchRequest.getWeather().isBlank()){
+            // 시작일이 있고
+            if(todoSearchRequest.getStart() != null){
+                // 끝일이 있고
+                if(todoSearchRequest.getEnd() != null){}
+                // 끝일이 없고
+                if(todoSearchRequest.getEnd() == null){}
+            }
+            // 시작일이 없고
+            if(todoSearchRequest.getStart() == null){
+                // 끝일이 있고
+                if(todoSearchRequest.getEnd() != null){}
+                // 끝일이 없고
+                if(todoSearchRequest.getEnd() == null){}
+            }
+        }
+        // 요청에 날씨가 없고
+        if(todoSearchRequest.getWeather().isBlank()){
+            // 시작일이 있고
+            if(todoSearchRequest.getStart() != null){
+                // 끝일이 있고
+                if(todoSearchRequest.getEnd() != null){}
+                // 끝일이 없고
+                if(todoSearchRequest.getEnd() == null){}
+            }
+            // 시작일이 없고
+            if(todoSearchRequest.getStart() == null){
+                // 끝일이 있고
+                if(todoSearchRequest.getEnd() != null){}
+                // 끝일이 없고
+                if(todoSearchRequest.getEnd() == null){
+                    Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+                }
+            }
+        }
+
+        // 요청에 조건이 없으면 이거
+
 
         // 요청에 날씨가 있으면 새로운 쿼리
 

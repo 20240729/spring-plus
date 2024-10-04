@@ -36,4 +36,23 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     @Query("SELECT t FROM Todo t WHERE t.modifiedAt > :start")
     Page<Todo> findByModifiedAtAfterThan(@Param("start") LocalDate start);
 
+    // 날씨, 시작일, 끝일
+    @Query("SELECT t FROM Todo t WHERE t.weather = :weather AND t.modifiedAt BETWEEN :start AND :end")
+    Page<Todo> findByWeatherAndModifiedAtBetween(
+            @Param("weather") String weather,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
+
+    // 날씨, 시작일
+    @Query("SELECT t FROM Todo t WHERE t.weather = :weather AND t.modifiedAt > :start")
+    Page<Todo> findByWeatherAndModifiedAtBefore (@Param("weather") String weather, @Param("start") LocalDate start);
+
+    // 날씨, 끝일
+    @Query("SELECT t FROM Todo t WHERE t.weather = :weather AND t.modifiedAt < :end")
+    Page<Todo> findByWeatherAndModifiedAtAfter (@Param("weather") String weather, @Param("end") LocalDate end);
+
+
+
+
 }
