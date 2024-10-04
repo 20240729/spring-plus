@@ -25,6 +25,4 @@ public class UserController {
     public void changePassword(@Auth AuthUser authUser, @RequestBody UserChangeRequest userChangeRequest) {
         userService.changePassword(authUser.getId(), userChangeRequest);
     }
-
-    // 닉네임 변경
 }
