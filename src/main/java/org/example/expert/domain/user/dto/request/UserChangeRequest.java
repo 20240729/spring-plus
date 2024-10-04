@@ -8,10 +8,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserChangePasswordRequest {
+public class UserChangeRequest {
 
     @NotBlank
     private String oldPassword;
-    @NotBlank
     private String newPassword;
+    private String nickName;
+    // 새 패스워드 빈 칸 가능으로 함
 }
