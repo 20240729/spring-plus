@@ -67,7 +67,7 @@ public class TodoService {
             if(todoSearchRequest.getStart() != null){
                 // 끝일이 있고
                 if(todoSearchRequest.getEnd() != null){
-                    Page<Todo> todos = todoRepository.findByWeatherAndModifiedAtBetween(
+                    todos = todoRepository.findByWeatherAndModifiedAtBetween(
                             todoSearchRequest.getWeather(),
                             todoSearchRequest.getStart(),
                             todoSearchRequest.getEnd(),
@@ -76,7 +76,7 @@ public class TodoService {
                 }
                 // 끝일이 없고
                 if(todoSearchRequest.getEnd() == null){
-                    Page<Todo> todos = todoRepository.findByWeatherAndModifiedAtBefore(
+                    todos = todoRepository.findByWeatherAndModifiedAtBefore(
                             todoSearchRequest.getWeather(),
                             todoSearchRequest.getStart(),
                             pageable
@@ -87,7 +87,7 @@ public class TodoService {
             if(todoSearchRequest.getStart() == null){
                 // 끝일이 있고
                 if(todoSearchRequest.getEnd() != null){
-                    Page<Todo> todos = todoRepository.findByWeatherAndModifiedAtAfter(
+                    todos = todoRepository.findByWeatherAndModifiedAtAfter(
                             todoSearchRequest.getWeather(),
                             todoSearchRequest.getEnd(),
                             pageable
@@ -95,7 +95,7 @@ public class TodoService {
                 }
                 // 끝일이 없고
                 if(todoSearchRequest.getEnd() == null){
-                    Page<Todo> todos = todoRepository.findByWeather(
+                    todos = todoRepository.findByWeather(
                             todoSearchRequest.getWeather(),
                             pageable
                     );
@@ -108,7 +108,7 @@ public class TodoService {
             if(todoSearchRequest.getStart() != null){
                 // 끝일이 있고
                 if(todoSearchRequest.getEnd() != null){
-                    Page<Todo> todos = todoRepository.findByModifiedAtBetween(
+                    todos = todoRepository.findByModifiedAtBetween(
                             todoSearchRequest.getStart(),
                             todoSearchRequest.getEnd(),
                             pageable
@@ -116,7 +116,7 @@ public class TodoService {
                 }
                 // 끝일이 없고
                 if(todoSearchRequest.getEnd() == null){
-                    Page<Todo> todos = todoRepository.findByModifiedAtAfterThan(
+                    todos = todoRepository.findByModifiedAtAfterThan(
                             todoSearchRequest.getStart(),
                             pageable
                     );
@@ -126,14 +126,14 @@ public class TodoService {
             if(todoSearchRequest.getStart() == null){
                 // 끝일이 있고
                 if(todoSearchRequest.getEnd() != null){
-                    Page<Todo> todos = todoRepository.findByModifiedAtBeforeThan(
+                    todos = todoRepository.findByModifiedAtBeforeThan(
                             todoSearchRequest.getEnd(),
                             pageable
                     );
                 }
                 // 끝일이 없고
                 if(todoSearchRequest.getEnd() == null){
-                    Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+                    todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
                 }
             }
         }
