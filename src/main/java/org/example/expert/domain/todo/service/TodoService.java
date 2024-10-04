@@ -51,7 +51,14 @@ public class TodoService {
     public Page<TodoResponse> getTodos(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
+        // 요청에 날씨가 없으면 이거
         Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+
+        // 요청에 날씨가 있으면 새로운 쿼리
+
+        // 요청에 수정일 기간(시작, 끝시간) 있으면 또 새로운 쿼리
+            // 수정일 기간 시작시간만(해당시간 이후 전부 검색)
+            // 수정일 기간 끝시간만(해당시간 이전 전부 검색)
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),

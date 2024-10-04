@@ -26,6 +26,8 @@ public class TodoController {
         return ResponseEntity.ok(todoService.saveTodo(authUser, todoSaveRequest));
     }
 
+    // 날씨, 수정일 기준으로 검색하기 추가
+    // 날씨와 수정일 데이터를 담은 요청 dto 추가
     @GetMapping("/todos")
     public ResponseEntity<Page<TodoResponse>> getTodos(
             @RequestParam(defaultValue = "1") int page,
