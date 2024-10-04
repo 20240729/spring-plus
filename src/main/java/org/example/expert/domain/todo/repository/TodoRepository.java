@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, Long> {
@@ -26,22 +27,22 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
 
     // 수정일 날짜 조건으로 찾기 - 두 날짜 사이
     @Query("SELECT t FROM Todo t WHERE t.modifiedAt BETWEEN :start AND :end")
-    Page<Todo> findByModifiedAtBetween(@Param("start") LocalDate start, @Param("end") LocalDate end, Pageable pageable);
+    Page<Todo> findByModifiedAtBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, Pageable pageable);
 
     // 수정일 날짜 조건으로 찾기 - 특정 날짜 이전
     @Query("SELECT t FROM Todo t WHERE t.modifiedAt < :end ")
-    Page<Todo> findByModifiedAtBeforeThan(@Param("end") LocalDate end, Pageable pageable);
+    Page<Todo> findByModifiedAtBeforeThan(@Param("end") LocalDateTime end, Pageable pageable);
 
     // 수정일 날짜 조건으로 찾기 - 특정 날짜 이후
     @Query("SELECT t FROM Todo t WHERE t.modifiedAt > :start")
-    Page<Todo> findByModifiedAtAfterThan(@Param("start") LocalDate start, Pageable pageable);
+    Page<Todo> findByModifiedAtAfterThan(@Param("start") LocalDateTime start, Pageable pageable);
 
     // 날씨, 시작일, 끝일
     @Query("SELECT t FROM Todo t WHERE t.weather = :weather AND t.modifiedAt BETWEEN :start AND :end")
     Page<Todo> findByWeatherAndModifiedAtBetween(
             @Param("weather") String weather,
-            @Param("start") LocalDate start,
-            @Param("end") LocalDate end,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
             Pageable pageable
     );
 
@@ -49,7 +50,7 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     @Query("SELECT t FROM Todo t WHERE t.weather = :weather AND t.modifiedAt > :start")
     Page<Todo> findByWeatherAndModifiedAtBefore (
             @Param("weather") String weather,
-            @Param("start") LocalDate start,
+            @Param("start") LocalDateTime start,
             Pageable pageable
     );
 
@@ -57,7 +58,7 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     @Query("SELECT t FROM Todo t WHERE t.weather = :weather AND t.modifiedAt < :end")
     Page<Todo> findByWeatherAndModifiedAtAfter (
             @Param("weather") String weather,
-            @Param("end") LocalDate end,
+            @Param("end") LocalDateTime end,
             Pageable pageable
     );
 

@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,16 +62,26 @@ public class TodoService {
         // 날씨 유무 * 시작일 유무 * 끝일 유무 = 2^3 = 8
         Page<Todo> todos = new PageImpl<>(new ArrayList<>());
 
+        // LocalDate를 LocalDateTime으로
+        LocalDateTime start = null;
+        if (todoSearchRequest.getStart() !=null){
+            start = todoSearchRequest.getStart().atStartOfDay();
+        }
+        LocalDateTime end = null;
+        if (todoSearchRequest.getEnd() !=null){
+            end = todoSearchRequest.getEnd().atStartOfDay();
+        }
+
         // 요청에 날씨가 있고
-        if(!todoSearchRequest.getWeather().isBlank()){
+        if(todoSearchRequest.getWeather() != null){
             // 시작일이 있고
             if(todoSearchRequest.getStart() != null){
                 // 끝일이 있고
                 if(todoSearchRequest.getEnd() != null){
                     todos = todoRepository.findByWeatherAndModifiedAtBetween(
                             todoSearchRequest.getWeather(),
-                            todoSearchRequest.getStart(),
-                            todoSearchRequest.getEnd(),
+                            start,
+                            end,
                             pageable
                     );
                 }
@@ -78,7 +89,7 @@ public class TodoService {
                 if(todoSearchRequest.getEnd() == null){
                     todos = todoRepository.findByWeatherAndModifiedAtBefore(
                             todoSearchRequest.getWeather(),
-                            todoSearchRequest.getStart(),
+                            start,
                             pageable
                     );
                 }
@@ -89,7 +100,7 @@ public class TodoService {
                 if(todoSearchRequest.getEnd() != null){
                     todos = todoRepository.findByWeatherAndModifiedAtAfter(
                             todoSearchRequest.getWeather(),
-                            todoSearchRequest.getEnd(),
+                            end,
                             pageable
                     );
                 }
@@ -103,21 +114,21 @@ public class TodoService {
             }
         }
         // 요청에 날씨가 없고
-        if(todoSearchRequest.getWeather().isBlank()){
+        if(todoSearchRequest.getWeather() == null){
             // 시작일이 있고
             if(todoSearchRequest.getStart() != null){
                 // 끝일이 있고
                 if(todoSearchRequest.getEnd() != null){
                     todos = todoRepository.findByModifiedAtBetween(
-                            todoSearchRequest.getStart(),
-                            todoSearchRequest.getEnd(),
+                            start,
+                            end,
                             pageable
                     );
                 }
                 // 끝일이 없고
                 if(todoSearchRequest.getEnd() == null){
                     todos = todoRepository.findByModifiedAtAfterThan(
-                            todoSearchRequest.getStart(),
+                            start,
                             pageable
                     );
                 }
@@ -127,7 +138,7 @@ public class TodoService {
                 // 끝일이 있고
                 if(todoSearchRequest.getEnd() != null){
                     todos = todoRepository.findByModifiedAtBeforeThan(
-                            todoSearchRequest.getEnd(),
+                            end,
                             pageable
                     );
                 }
