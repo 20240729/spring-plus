@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.expert.config.PasswordEncoder;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.user.dto.request.UserChangeRequest;
+import org.example.expert.domain.user.dto.response.UserNicknameResponse;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.repository.UserRepository;
@@ -34,7 +35,7 @@ public class UserService {
             throw new InvalidRequestException("잘못된 비밀번호입니다.");
         }
 
-        // 새 비밀번호가 없지 않을 경우에만 비밀번호를 바꿈
+        // 새 비밀번호가 있을 경우에만 비밀번호를 바꿈
         if(!userChangeRequest.getNewPassword().isBlank()){
             if (passwordEncoder.matches(userChangeRequest.getNewPassword(), user.getPassword())) {
                 throw new InvalidRequestException("새 비밀번호는 기존 비밀번호와 같을 수 없습니다.");
@@ -46,7 +47,14 @@ public class UserService {
         if(!userChangeRequest.getNickName().isBlank()){
             user.updateNickName(userChangeRequest.getNickName());
         }
+    }
 
+    // 로그인된 유저의 닉네임 가져오기
+    public UserNicknameResponse getUserNickName(long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
+
+        return new UserNicknameResponse(user.getNickName());
     }
 
     private static void validateNewPassword(UserChangeRequest userChangeRequest) {
