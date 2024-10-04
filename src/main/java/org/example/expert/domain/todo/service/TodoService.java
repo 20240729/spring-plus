@@ -13,10 +13,14 @@ import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,23 +59,47 @@ public class TodoService {
 
         // 가능한 검색 조건들
         // 날씨 유무 * 시작일 유무 * 끝일 유무 = 2^3 = 8
-        // 아니 8개나 적어야함???
+        Page<Todo> todos = new PageImpl<>(new ArrayList<>());
 
         // 요청에 날씨가 있고
         if(!todoSearchRequest.getWeather().isBlank()){
             // 시작일이 있고
             if(todoSearchRequest.getStart() != null){
                 // 끝일이 있고
-                if(todoSearchRequest.getEnd() != null){}
+                if(todoSearchRequest.getEnd() != null){
+                    Page<Todo> todos = todoRepository.findByWeatherAndModifiedAtBetween(
+                            todoSearchRequest.getWeather(),
+                            todoSearchRequest.getStart(),
+                            todoSearchRequest.getEnd(),
+                            pageable
+                    );
+                }
                 // 끝일이 없고
-                if(todoSearchRequest.getEnd() == null){}
+                if(todoSearchRequest.getEnd() == null){
+                    Page<Todo> todos = todoRepository.findByWeatherAndModifiedAtBefore(
+                            todoSearchRequest.getWeather(),
+                            todoSearchRequest.getStart(),
+                            pageable
+                    );
+                }
             }
             // 시작일이 없고
             if(todoSearchRequest.getStart() == null){
                 // 끝일이 있고
-                if(todoSearchRequest.getEnd() != null){}
+                if(todoSearchRequest.getEnd() != null){
+                    Page<Todo> todos = todoRepository.findByWeatherAndModifiedAtAfter(
+                            todoSearchRequest.getWeather(),
+                            todoSearchRequest.getEnd(),
+                            pageable
+                    );
+                }
                 // 끝일이 없고
-                if(todoSearchRequest.getEnd() == null){}
+                if(todoSearchRequest.getEnd() == null){
+                    Page<Todo> todos = todoRepository.findByWeather(
+                            todoSearchRequest.getWeather(),
+                            pageable
+                    );
+                }
             }
         }
         // 요청에 날씨가 없고
@@ -79,29 +107,36 @@ public class TodoService {
             // 시작일이 있고
             if(todoSearchRequest.getStart() != null){
                 // 끝일이 있고
-                if(todoSearchRequest.getEnd() != null){}
+                if(todoSearchRequest.getEnd() != null){
+                    Page<Todo> todos = todoRepository.findByModifiedAtBetween(
+                            todoSearchRequest.getStart(),
+                            todoSearchRequest.getEnd(),
+                            pageable
+                    );
+                }
                 // 끝일이 없고
-                if(todoSearchRequest.getEnd() == null){}
+                if(todoSearchRequest.getEnd() == null){
+                    Page<Todo> todos = todoRepository.findByModifiedAtAfterThan(
+                            todoSearchRequest.getStart(),
+                            pageable
+                    );
+                }
             }
             // 시작일이 없고
             if(todoSearchRequest.getStart() == null){
                 // 끝일이 있고
-                if(todoSearchRequest.getEnd() != null){}
+                if(todoSearchRequest.getEnd() != null){
+                    Page<Todo> todos = todoRepository.findByModifiedAtBeforeThan(
+                            todoSearchRequest.getEnd(),
+                            pageable
+                    );
+                }
                 // 끝일이 없고
                 if(todoSearchRequest.getEnd() == null){
                     Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
                 }
             }
         }
-
-        // 요청에 조건이 없으면 이거
-
-
-        // 요청에 날씨가 있으면 새로운 쿼리
-
-        // 요청에 수정일 기간(시작, 끝시간) 있으면 또 새로운 쿼리
-            // 수정일 기간 시작시간만(해당시간 이후 전부 검색)
-            // 수정일 기간 끝시간만(해당시간 이전 전부 검색)
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
