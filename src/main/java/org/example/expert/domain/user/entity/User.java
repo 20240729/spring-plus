@@ -38,10 +38,17 @@ public class User extends Timestamped {
     }
 
     public static User fromAuthUser(AuthUser authUser) {
+
+        UserRole role = UserRole.valueOf(authUser.getAuthorities()
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("권한이 없습니다."))
+                .getAuthority());
+
         return new User(
                 authUser.getId(),
                 authUser.getEmail(),
-                authUser.getUserRole(),
+                role,
                 authUser.getNickName()
         );
     }
