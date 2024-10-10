@@ -119,94 +119,83 @@ TodoService.getTodo 메소드
 - JPQL로 작성된 `findByIdWithUser` 를 QueryDSL로 변경합니다.
 - 7번과 마찬가지로 N+1 문제가 발생하지 않도록 유의해 주세요!
 
->해결 방법 : 커스텀 레포지토리를 만들고 그곳에 QueryDSL을 활용한 쿼리문을 만든 후 기존 레포지토리에 상속시킴.
-이 과정에서 Q클래스가 자동으로 생성되지 않는 문제가 발생함.
+> 해결 방법 : 커스텀 레포지토리를 만들고 그곳에 QueryDSL을 활용한 쿼리문을 만든 후 기존 레포지토리에 상속시킴.  
+> 이 과정에서 Q클래스가 자동으로 생성되지 않는 문제가 발생함.
+>
+> QueryDSL의 QClass가 생성되지 않아서 해 본 것들.
+> 1.  gradle에 의존성 추가  
+      >     // QueryDSL 추가  
+      >     implementation 'com.querydsl:querydsl-jpa:5.0.0'  
+      >     annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jpa'  
+      >     해결되지 않고 컴파일 오류 발생. 어느 시점에 적용하고 문제가 생겼는지 기억이 나지 않아 정상적으로 실행된 것이 확실했던 커밋의 build.gradle을 가져 와 덮어씌움. 다시 원점으로 돌아감.
+>
+> 2. 의존성 추가와 함께 설정 추가  
+     >    // queryDSL  
+     >    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'  
+     >    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"  
+     >    annotationProcessor "jakarta.annotation:jakarta.annotation-api"  
+     >    annotationProcessor "jakarta.persistence:jakarta.persistence-api"  
+     >    추가한 의존성
+     >
+     >    // Querydsl 설정부  
+     >    def generated = 'src/main/generated'
+     >
+     >    // querydsl QClass 파일 생성 위치를 지정  
+     >    tasks.withType(JavaCompile) {  
+     >        options.getGeneratedSourceOutputDirectory().set(file(generated))  
+     >    }
+     >
+     >    // java source set 에 querydsl QClass 위치 추가  
+     >    sourceSets {  
+     >        main.java.srcDirs += [ generated ]  
+     >    }
+     >
+     >    // gradle clean 시에 QClass 디렉토리 삭제  
+     >    clean {  
+     >        delete file(generated)  
+     >    }
+     >
+     >    추가한 설정
+     >
+     >    해결되지 않음. 오류는 발생하지 않음.  
+     >    generated 패키지는 생겼지만 비어 있음.
+>
+> 3. 설정 - build tools - gradle에서 gradle-wrapper.properties 파일이 없다는 경고를 보고 해당 파일이 어떤 역할을 하는지 알아본 후, 다른 프로젝트에서 붙여 넣음.
+     >
+     >    `gradle-wrapper.properties` 파일은 Gradle Wrapper를 설정하는 데 사용되는 설정 파일입니다. Gradle Wrapper는 프로젝트에서 특정 버전의 Gradle을 사용하도록 보장하는 도구로, 이를 통해 프로젝트를 빌드하는 시스템에 Gradle이 설치되어 있지 않더라도, 동일한 버전의 Gradle을 다운받아 빌드할 수 있게 합니다.
+     >
+     >    ### 각 항목의 역할 설명:
+     >    1. **distributionBase=GRADLE_USER_HOME**
+             >       - 이 설정은 Gradle Wrapper가 다운로드한 Gradle 배포판을 저장할 기본 디렉터리 위치를 지정합니다. `GRADLE_USER_HOME`은 일반적으로 사용자의 Gradle 홈 디렉터리를 의미합니다.
+>
+>    2. **distributionPath=wrapper/dists**
+        >       - 배포 파일이 저장될 경로를 지정합니다. 여기서는 `wrapper/dists` 디렉터리에 Gradle 배포 파일이 저장됩니다.
+>
+>    3. **distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.1-bin.zip**
+        >       - 프로젝트에서 사용할 Gradle의 버전을 지정합니다. 이 URL은 지정된 버전의 Gradle을 다운로드할 수 있는 위치를 나타냅니다. 이 예에서는 Gradle 8.10.1 버전의 바이너리 파일을 다운로드하도록 설정되어 있습니다.
+>
+>    4. **networkTimeout=10000**
+        >       - 네트워크 요청의 타임아웃 시간을 밀리초 단위로 설정합니다. 10000 밀리초(10초) 동안 응답이 없으면 타임아웃이 발생합니다.
+>
+>    5. **validateDistributionUrl=true**
+        >       - Gradle Wrapper가 `distributionUrl`에서 제공된 URL의 유효성을 검사하도록 설정합니다. URL이 올바르지 않으면 다운로드를 시도하지 않습니다.
+>
+>    6. **zipStoreBase=GRADLE_USER_HOME**
+        >       - 압축 파일(`zip` 형식)의 기본 저장 위치를 지정합니다. `GRADLE_USER_HOME`은 위에서 언급한 것처럼 사용자의 Gradle 홈 디렉터리를 의미합니다.
+>
+>    7. **zipStorePath=wrapper/dists**
+        >       - 다운로드된 Gradle 배포 파일이 저장될 경로입니다. 여기서는 `wrapper/dists`에 저장됩니다.
+     >
+     >    이 파일을 통해 Gradle 프로젝트를 어떤 버전으로, 어디에 다운로드 및 저장할지 설정하고, 그 과정을 관리합니다.
+>
+> 이를 보고 이전에 사용했던 아웃소싱 프로젝트의 gradle-wrapper.properties를 그대로 이식해도 문제 없겠다 판단, 복사하여 붙여 넣음.
+>
+> (이 때, .\gradlew --refresh-dependencies 명령어로 의존성을 다시 다운로드 하기도 했음. 이게 문제 해결의 원인일 수도.)
+>
+> 이후 gradle을 한번 reload 하고 어플리케이션을 실행하니
+>
+> 문제가 해결되어 Q클래스가 정상적으로 생성된 것을 확인할 수 있었음.
 
-QueryDSL의 QClass가 생성되지 않아서 해 본 것들.
-1.  gradle에 의존성 추가
-    // QueryDSL 추가
-    implementation 'com.querydsl:querydsl-jpa:5.0.0'
-    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jpa'
-    해결되지 않고 컴파일 오류 발생. 어느 시점에 적용하고 문제가 생겼는지 기억이 나지 않아 정상적으로 실행된 것이 확실했던 커밋의 build.gradle을 가져 와 덮어씌움. 다시 원점으로 돌아감.
-
-
-
-2. 의존성 추가와 함께 설정 추가
-   // queryDSL
-   implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-   annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-   annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-   annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-   추가한 의존성
-
-
-
-// Querydsl 설정부
-def generated = 'src/main/generated'
-
-// querydsl QClass 파일 생성 위치를 지정
-tasks.withType(JavaCompile) {
-options.getGeneratedSourceOutputDirectory().set(file(generated))
-}
-
-// java source set 에 querydsl QClass 위치 추가
-sourceSets {
-main.java.srcDirs += [ generated ]
-}
-
-// gradle clean 시에 QClass 디렉토리 삭제
-clean {
-delete file(generated)
-}
-
-
-추가한 설정
-
-
-
-해결되지 않음. 오류는 발생하지 않음.
-
-generated 패키지는 생겼지만 비어 있음.
-
-
-
-3. 설정 - build tools - gradle에서 gradle-wrapper.properties 파일이 없다는 경고를 보고 해당 파일이 어떤 역할을 하는지 알아본 후, 다른 프로젝트에서 붙여 넣음.
-
-
-`gradle-wrapper.properties` 파일은 Gradle Wrapper를 설정하는 데 사용되는 설정 파일입니다. Gradle Wrapper는 프로젝트에서 특정 버전의 Gradle을 사용하도록 보장하는 도구로, 이를 통해 프로젝트를 빌드하는 시스템에 Gradle이 설치되어 있지 않더라도, 동일한 버전의 Gradle을 다운받아 빌드할 수 있게 합니다.
-
-### 각 항목의 역할 설명:
-1. **distributionBase=GRADLE_USER_HOME**
-    - 이 설정은 Gradle Wrapper가 다운로드한 Gradle 배포판을 저장할 기본 디렉터리 위치를 지정합니다. `GRADLE_USER_HOME`은 일반적으로 사용자의 Gradle 홈 디렉터리를 의미합니다.
-
-2. **distributionPath=wrapper/dists**
-    - 배포 파일이 저장될 경로를 지정합니다. 여기서는 `wrapper/dists` 디렉터리에 Gradle 배포 파일이 저장됩니다.
-
-3. **distributionUrl=https\://services.gradle.org/distributions/gradle-8.10.1-bin.zip**
-    - 프로젝트에서 사용할 Gradle의 버전을 지정합니다. 이 URL은 지정된 버전의 Gradle을 다운로드할 수 있는 위치를 나타냅니다. 이 예에서는 Gradle 8.10.1 버전의 바이너리 파일을 다운로드하도록 설정되어 있습니다.
-
-4. **networkTimeout=10000**
-    - 네트워크 요청의 타임아웃 시간을 밀리초 단위로 설정합니다. 10000 밀리초(10초) 동안 응답이 없으면 타임아웃이 발생합니다.
-
-5. **validateDistributionUrl=true**
-    - Gradle Wrapper가 `distributionUrl`에서 제공된 URL의 유효성을 검사하도록 설정합니다. URL이 올바르지 않으면 다운로드를 시도하지 않습니다.
-
-6. **zipStoreBase=GRADLE_USER_HOME**
-    - 압축 파일(`zip` 형식)의 기본 저장 위치를 지정합니다. `GRADLE_USER_HOME`은 위에서 언급한 것처럼 사용자의 Gradle 홈 디렉터리를 의미합니다.
-
-7. **zipStorePath=wrapper/dists**
-    - 다운로드된 Gradle 배포 파일이 저장될 경로입니다. 여기서는 `wrapper/dists`에 저장됩니다.
-
-이 파일을 통해 Gradle 프로젝트를 어떤 버전으로, 어디에 다운로드 및 저장할지 설정하고, 그 과정을 관리합니다.
-
-
-이를 보고 이전에 사용했던 아웃소싱 프로젝트의 gradle-wrapper.properties를 그대로 이식해도 문제 없겠다 판단, 복사하여 붙여 넣음.
-
-(이 때, .\gradlew --refresh-dependencies 명령어로 의존성을 다시 다운로드 하기도 했음. 이게 문제 해결의 원인일 수도.)
-
-이후 gradle을 한번 reload 하고 어플리케이션을 실행하니
-
-문제가 해결되어 Q클래스가 정상적으로 생성된 것을 확인할 수 있었음.
 
 ### **9. Spring  Security**
 
